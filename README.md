@@ -1,4 +1,4 @@
-# שטוס · קיר הגורלות
+# ששטוס · קיר הגורלות
 
 A digital recreation of the Wall of Fate (קיר הגורלות) from the Israeli
 children's show *Shatus*, built for playing along at home. The challenges
