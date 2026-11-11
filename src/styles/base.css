@@ -1,0 +1,221 @@
+/* ------------------------------------------------------------------
+   Shatus · Wall of Fate — design system
+   A 1990s Israeli children's TV game-show set: deep purple studio,
+   gold trim, chasing marquee bulbs and candy colours.
+   ------------------------------------------------------------------ */
+
+:root {
+  /* studio */
+  --purple-900: #11052a;
+  --purple-800: #1d0945;
+  --purple-700: #2d0f6a;
+  --purple-600: #45189e;
+  --violet: #7b2ff7;
+
+  /* accents */
+  --magenta: #ff3d9e;
+  --cyan: #28e0d8;
+  --lime: #b8f23c;
+  --orange: #ff8a2b;
+
+  /* metal */
+  --gold: #ffc62e;
+  --gold-light: #fff2b8;
+  --gold-deep: #b8760a;
+  --gold-shadow: #7a4a04;
+
+  /* neutrals */
+  --cream: #fff7ea;
+  --ink: #190838;
+  --ink-soft: #3a1f63;
+
+  /* type */
+  --font-display: 'Secular One', 'Rubik', 'Arial Hebrew', system-ui, sans-serif;
+  --font-body: 'Rubik', 'Arial Hebrew', system-ui, -apple-system, sans-serif;
+
+  /* layout */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 26px;
+  --radius-xl: 36px;
+
+  --shadow-panel: 0 18px 50px rgba(0, 0, 0, 0.55);
+  --shadow-raised: 0 10px 0 var(--gold-shadow), 0 20px 32px rgba(0, 0, 0, 0.45);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--cream);
+  background: var(--purple-900);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#app {
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.1;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: var(--magenta);
+  color: #fff;
+}
+
+/* ---------- shared pieces ------------------------------------------ */
+
+.pill-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  border: none;
+  padding: 0.85em 1.6em;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--gold-light), var(--gold) 45%, var(--gold-deep));
+  border-radius: 999px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.2),
+    0 7px 0 var(--gold-shadow),
+    0 14px 26px rgba(0, 0, 0, 0.45);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.2s ease;
+}
+
+.pill-button:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.2),
+    0 9px 0 var(--gold-shadow),
+    0 18px 30px rgba(0, 0, 0, 0.5);
+}
+
+.pill-button:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+    0 2px 0 var(--gold-shadow),
+    0 6px 14px rgba(0, 0, 0, 0.45);
+}
+
+.pill-button:disabled {
+  filter: grayscale(0.6) brightness(0.75);
+  cursor: not-allowed;
+}
+
+.pill-button--ghost {
+  color: var(--cream);
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.26);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.pill-button--ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.pill-button--ghost:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.pill-button--danger {
+  color: #fff;
+  background: linear-gradient(180deg, #ff7a6b, #e3372a 50%, #a21f15);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 7px 0 #6f1109,
+    0 14px 24px rgba(0, 0, 0, 0.45);
+}
+
+.panel {
+  background: linear-gradient(170deg, rgba(69, 24, 158, 0.92), rgba(29, 9, 69, 0.96));
+  border: 2px solid rgba(255, 198, 46, 0.4);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    var(--shadow-panel),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* Signed scores must stay "+300" / "-100" and not be reordered by the
+   surrounding right-to-left text. */
+.num {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- motion -------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.08s !important;
+  }
+}
