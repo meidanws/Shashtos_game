@@ -228,6 +228,10 @@ function goHome(): void {
   padding: clamp(0.5rem, 1.1vw, 0.9rem) clamp(0.6rem, 1.6vw, 1.4rem) clamp(0.7rem, 1.6vw, 1.2rem);
   padding-block-start: max(clamp(0.5rem, 1.1vw, 0.9rem), env(safe-area-inset-top, 0px));
   padding-block-end: max(clamp(0.7rem, 1.6vw, 1.2rem), env(safe-area-inset-bottom, 0px));
+  /* past this the logo and the tools are simply flung to opposite corners of
+     the room; the wall stays centred either way */
+  max-width: 2600px;
+  margin-inline: auto;
 }
 
 .screen__bar {
@@ -239,10 +243,10 @@ function goHome(): void {
 
 .screen__logo {
   justify-self: start;
-  --word-size: clamp(1.4rem, 2.4vw, 2.1rem);
-  --sub-size: clamp(0.5rem, 0.8vw, 0.68rem);
+  --word-size: clamp(1.4rem, 2.4vw, 2.9rem);
+  --sub-size: clamp(0.5rem, 0.8vw, 0.9rem);
   /* big enough that the גן ימית caption on the badge stays readable */
-  --badge-size: clamp(60px, 5.4vw, 86px);
+  --badge-size: clamp(60px, 5.4vw, 120px);
 }
 
 .screen__center {
@@ -262,7 +266,7 @@ function goHome(): void {
   align-items: baseline;
   gap: 0.35em;
   margin: 0;
-  font-size: clamp(0.65rem, 0.95vw, 0.85rem);
+  font-size: clamp(0.65rem, 0.95vw, 1.1rem);
   letter-spacing: 0.05em;
   color: rgba(255, 247, 234, 0.65);
   white-space: nowrap;
@@ -270,7 +274,7 @@ function goHome(): void {
 
 .screen__remaining strong {
   font-family: var(--font-display);
-  font-size: clamp(1.1rem, 1.8vw, 1.6rem);
+  font-size: clamp(1.1rem, 1.8vw, 2.3rem);
   color: var(--gold);
   text-shadow: 0 0 14px rgba(255, 198, 46, 0.6);
 }
@@ -283,7 +287,7 @@ function goHome(): void {
   gap: 0.4rem;
   padding: 0.5em 1em;
   font-family: var(--font-display);
-  font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+  font-size: clamp(0.75rem, 1.1vw, 1.3rem);
   color: var(--gold-light);
   background: rgba(29, 9, 69, 0.85);
   border: 2px solid rgba(255, 198, 46, 0.45);
@@ -308,7 +312,7 @@ function goHome(): void {
   gap: 0.4rem;
   padding: 0.5em 1em;
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: clamp(0.85rem, 1vw, 1.2rem);
   color: #2a1150;
   background: linear-gradient(180deg, var(--gold-light), var(--gold));
   border: none;
@@ -372,7 +376,19 @@ function goHome(): void {
   }
 
   .screen__finish {
-    padding: 0.5em;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    min-width: 44px;
+  }
+}
+
+/* Touch input, whatever the screen width: every control the game is actually
+   driven by gets a 44px target, which is what a fingertip needs. */
+@media (pointer: coarse) {
+  .screen__finish,
+  .screen__results {
+    min-height: 44px;
   }
 }
 
@@ -389,6 +405,29 @@ function goHome(): void {
 
   .screen__tools {
     justify-self: end;
+  }
+}
+
+/* Sideways phone: the two-row bar above costs height the wall needs, and at
+   this width there is plenty of room to put it back on a single row. */
+@media (max-height: 560px) and (orientation: landscape) {
+  .screen {
+    gap: 0.3rem;
+  }
+
+  .screen__bar {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    row-gap: 0;
+  }
+
+  .screen__center {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .screen__logo {
+    --word-size: 1.1rem;
+    --badge-size: 44px;
   }
 }
 </style>

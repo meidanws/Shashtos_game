@@ -55,7 +55,7 @@ const progress = computed(() => (store.revealedCount / CUBE_COUNT) * 100)
 .opening__prompt {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(0.85rem, 1.5vw, 1.2rem);
+  font-size: clamp(0.85rem, 1.5vw, 1.7rem);
   color: var(--gold-light);
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
@@ -70,19 +70,19 @@ const progress = computed(() => (store.revealedCount / CUBE_COUNT) * 100)
   display: flex;
   align-items: baseline;
   gap: 0.35em;
-  font-size: clamp(0.65rem, 0.95vw, 0.8rem);
+  font-size: clamp(0.65rem, 0.95vw, 1.05rem);
   color: rgba(255, 247, 234, 0.65);
   white-space: nowrap;
 }
 
 .opening__count strong {
   font-family: var(--font-display);
-  font-size: clamp(0.95rem, 1.5vw, 1.25rem);
+  font-size: clamp(0.95rem, 1.5vw, 1.8rem);
   color: var(--gold);
 }
 
 .opening__bar {
-  width: clamp(80px, 14vw, 190px);
+  width: clamp(80px, 14vw, 300px);
   height: 8px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.45);
@@ -106,7 +106,7 @@ const progress = computed(() => (store.revealedCount / CUBE_COUNT) * 100)
   align-items: center;
   gap: 0.35rem;
   padding: 0.4em 0.85em;
-  font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+  font-size: clamp(0.7rem, 1.1vw, 1.2rem);
   color: var(--cream);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);

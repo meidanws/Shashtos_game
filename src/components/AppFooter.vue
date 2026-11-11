@@ -25,7 +25,7 @@ import { Heart } from "lucide-vue-next";
   direction: ltr;
   gap: 0.35em;
   padding-block: 0.4rem;
-  font-size: clamp(0.62rem, 0.9vw, 0.78rem);
+  font-size: clamp(0.62rem, 0.9vw, 1rem);
   letter-spacing: 0.06em;
   color: rgba(255, 247, 234, 0.45);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);

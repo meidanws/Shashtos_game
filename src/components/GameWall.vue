@@ -66,9 +66,15 @@ onBeforeUnmount(() => {
 .wall {
   position: relative;
   /* The wall is the show: it takes as much of the screen as it can get.
-     170px covers the slim top bar and the page padding; 1.28 is the wall's
-     own width/height ratio including frame padding and grid gaps. */
-  width: clamp(420px, min(96vw, calc((100dvh - 195px) * 1.28)), 1500px);
+     --chrome is the vertical budget spent on the top bar, footer and page
+     padding; --ratio is the wall's own width/height including frame padding
+     and grid gaps. On any landscape screen height is the binding constraint,
+     so the upper bound exists only to stop the wall outgrowing a very tall
+     display — 1500px used to leave a 4K projector two-thirds empty. */
+  --chrome: 195px;
+  --ratio: 1.28;
+  --bulb: clamp(11px, 0.75vw, 20px);
+  width: clamp(420px, min(96vw, calc((100dvh - var(--chrome)) * var(--ratio))), 2400px);
   /* GameScreen narrows this while the running tally sits beside the wall. */
   max-width: var(--wall-cap, 100%);
   margin-inline: auto;
@@ -120,35 +126,35 @@ onBeforeUnmount(() => {
 .bulbs--h {
   left: clamp(16px, 2.4vw, 34px);
   right: clamp(16px, 2.4vw, 34px);
-  height: 14px;
+  height: var(--bulb);
   background-image: radial-gradient(
-    circle 5px at 17px 7px,
+    circle calc(var(--bulb) * 0.36) at calc(var(--bulb) * 1.21) calc(var(--bulb) * 0.5),
     #fff6cf 0 68%,
     rgba(255, 214, 120, 0.15) 100%
   );
-  background-size: 34px 14px;
+  background-size: calc(var(--bulb) * 2.43) var(--bulb);
   background-repeat: repeat-x;
 }
 
 .bulbs--h::after {
-  background-position: 17px 0;
+  background-position: calc(var(--bulb) * 1.21) 0;
 }
 
 .bulbs--v {
   top: clamp(16px, 2.4vw, 34px);
   bottom: clamp(16px, 2.4vw, 34px);
-  width: 14px;
+  width: var(--bulb);
   background-image: radial-gradient(
-    circle 5px at 7px 17px,
+    circle calc(var(--bulb) * 0.36) at calc(var(--bulb) * 0.5) calc(var(--bulb) * 1.21),
     #fff6cf 0 68%,
     rgba(255, 214, 120, 0.15) 100%
   );
-  background-size: 14px 34px;
+  background-size: var(--bulb) calc(var(--bulb) * 2.43);
   background-repeat: repeat-y;
 }
 
 .bulbs--v::after {
-  background-position: 0 17px;
+  background-position: 0 calc(var(--bulb) * 1.21);
 }
 
 .bulbs--top {
@@ -179,12 +185,18 @@ onBeforeUnmount(() => {
 
 @media (max-width: 1000px) {
   .wall {
-    width: min(96vw, 820px);
+    /* keep the height term: without it a short landscape tablet gets a wall
+       taller than its own viewport and has to scroll to see the bottom row */
+    width: min(96vw, calc((100dvh - var(--chrome)) * var(--ratio)), 820px);
   }
 }
 
 @media (max-width: 620px) {
   .wall {
+    /* 3 columns x 4 rows is a taller box than 4 x 3, so the ratio that turns
+       available height into width has to change with it */
+    --ratio: 0.82;
+    --chrome: 205px;
     /* 100% of the padded container, not vw, so the frame never clips */
     width: min(100%, 480px);
     padding: 12px;
@@ -209,6 +221,34 @@ onBeforeUnmount(() => {
 @media (max-width: 359px) {
   .wall__grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* A phone held sideways has width to spare and almost none of the height the
+   wall actually needs. Keep the full 4 x 3 grid — dropping to 3 columns only
+   makes the wall taller, which is the wrong direction here — and let the
+   short side set the size so the bottom row stays on screen. Last in the file
+   so it wins over the width-based rules above. */
+@media (max-height: 560px) and (orientation: landscape) {
+  .wall {
+    --chrome: 128px;
+    --ratio: 1.28;
+    width: min(96vw, calc((100dvh - var(--chrome)) * var(--ratio)));
+    padding: 10px;
+  }
+
+  .wall__panel {
+    padding: 10px;
+  }
+
+  .wall__grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  /* the marquee is the first thing to go when every pixel of height counts */
+  .bulbs {
+    display: none;
   }
 }
 </style>

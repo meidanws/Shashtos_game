@@ -113,7 +113,7 @@ input {
   border: none;
   padding: 0.85em 1.6em;
   font-family: var(--font-display);
-  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-size: clamp(1rem, 1.5vw, 1.7rem);
   letter-spacing: 0.01em;
   color: var(--ink);
   background: linear-gradient(180deg, var(--gold-light), var(--gold) 45%, var(--gold-deep));
@@ -209,6 +209,14 @@ input {
 }
 
 /* ---------- motion -------------------------------------------------- */
+
+/* Touch input: a pill is the main thing the game is driven by, so it gets a
+   fingertip-sized target no matter how small the surrounding type goes. */
+@media (pointer: coarse) {
+  .pill-button {
+    min-height: 44px;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,

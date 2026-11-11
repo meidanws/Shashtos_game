@@ -140,8 +140,14 @@ const style = computed(() => ({
   border: 0;
   background: none;
   perspective: 1400px;
+  /* Everything inside a cube is sized from the cube's own width (cqw) rather
+     than the viewport. The wall is height-driven, so on a wide screen — a
+     projector worst of all — viewport units drift away from the real cube
+     size and the artwork ends up shouting while the score whispers.
+     Caveat: cqw written *here* would resolve against an ancestor container,
+     never the cube itself, so --face-radius lives on .cube__lift below. */
+  container-type: inline-size;
   --edge: color-mix(in srgb, var(--tile-to) 55%, #000);
-  --face-radius: clamp(10px, 1.5vw, 22px);
 }
 
 .cube:disabled {
@@ -168,7 +174,7 @@ const style = computed(() => ({
   translate: -50% 4px;
   z-index: 20;
   padding: 0.45em 0.85em;
-  font-size: clamp(0.65rem, 0.95vw, 0.85rem);
+  font-size: clamp(0.7rem, 5cqw, 1.05rem);
   line-height: 1.3;
   white-space: nowrap;
   color: var(--ink);
@@ -217,6 +223,8 @@ const style = computed(() => ({
 .cube__lift {
   position: absolute;
   inset: 0;
+  /* on .cube__lift, not .cube, so cqw measures the cube (see above) */
+  --face-radius: clamp(8px, 7cqw, 30px);
   transform-style: preserve-3d;
   transition:
     scale 0.16s ease,
@@ -257,10 +265,10 @@ const style = computed(() => ({
   display: grid;
   place-items: center;
   width: 30%;
-  max-width: 44px;
+  max-width: 4.4rem;
   aspect-ratio: 1;
   font-family: var(--font-display);
-  font-size: clamp(0.8rem, 1.6vw, 1.5rem);
+  font-size: clamp(0.8rem, 14cqw, 2.1rem);
   color: #2a1150;
   background: radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 65%, #c47f06);
   border-radius: 50%;
@@ -327,7 +335,7 @@ const style = computed(() => ({
   display: grid;
   place-items: center;
   font-family: var(--font-display);
-  font-size: clamp(0.7rem, 1.4vw, 1.2rem);
+  font-size: clamp(0.65rem, 7.5cqw, 1.9rem);
   text-align: center;
   color: #fff;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
@@ -421,7 +429,7 @@ const style = computed(() => ({
   position: relative;
   padding: 0.35em 0.9em;
   font-family: var(--font-display);
-  font-size: clamp(0.6rem, 1.25vw, 1.1rem);
+  font-size: clamp(0.55rem, 7cqw, 1.7rem);
   letter-spacing: 0.02em;
   text-align: center;
   border: 2px dashed rgba(255, 247, 234, 0.4);
@@ -448,7 +456,7 @@ const style = computed(() => ({
 .cube__score {
   position: relative;
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3.6vw, 3.4rem);
+  font-size: clamp(1.1rem, 20cqw, 5.2rem);
   line-height: 1;
   letter-spacing: -0.02em;
   text-shadow:
@@ -459,7 +467,7 @@ const style = computed(() => ({
 .cube__tag {
   position: relative;
   font-family: var(--font-display);
-  font-size: clamp(0.55rem, 1vw, 0.95rem);
+  font-size: clamp(0.5rem, 6cqw, 1.5rem);
   opacity: 0.85;
   letter-spacing: 0.04em;
 }

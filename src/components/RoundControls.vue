@@ -113,7 +113,7 @@ function choose(id: TeamId): void {
 .controls__prompt {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(0.85rem, 1.5vw, 1.2rem);
+  font-size: clamp(0.85rem, 1.5vw, 1.7rem);
   color: var(--gold-light);
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
@@ -177,14 +177,14 @@ function choose(id: TeamId): void {
 
 .team-pick__bandana {
   flex: none;
-  width: clamp(22px, 1.9vw, 30px);
+  width: clamp(22px, 1.9vw, 44px);
   height: clamp(22px, 1.9vw, 30px);
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
 }
 
 .team-pick__name {
   font-family: var(--font-display);
-  font-size: clamp(0.9rem, 1.5vw, 1.25rem);
+  font-size: clamp(0.9rem, 1.5vw, 1.8rem);
   max-width: 14ch;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -198,7 +198,7 @@ function choose(id: TeamId): void {
   height: 1.7em;
   padding: 0 0.35em;
   font-family: var(--font-display);
-  font-size: 0.8rem;
+  font-size: clamp(0.8rem, 0.9vw, 1.1rem);
   color: #2a1150;
   background: color-mix(in srgb, var(--team) 40%, #fff);
   border-radius: 999px;
@@ -211,7 +211,7 @@ function choose(id: TeamId): void {
 /* Pulses with light rather than size, so the button never moves under the
    pointer (and stays clickable for anything driving the page). */
 .reveal {
-  font-size: clamp(1rem, 2vw, 1.4rem);
+  font-size: clamp(1rem, 2vw, 2rem);
   padding: 0.5em 1.4em;
   animation: reveal-call 1.6s ease-in-out infinite;
 }
@@ -275,6 +275,12 @@ function choose(id: TeamId): void {
       0 7px 0 var(--gold-shadow),
       0 14px 26px rgba(0, 0, 0, 0.45),
       0 0 34px 10px rgba(255, 198, 46, 0.55);
+  }
+}
+
+@media (pointer: coarse) {
+  .team-pick {
+    min-height: 44px;
   }
 }
 
