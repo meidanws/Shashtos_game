@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { RotateCcw, Settings, Undo2, Users, Volume2, VolumeX, X } from 'lucide-vue-next'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { Disc3, RotateCcw, Settings, Undo2, Users, Volume2, VolumeX, X } from 'lucide-vue-next'
 import ConfirmationDialog from './ConfirmationDialog.vue'
 import { useGameStore } from '@/stores/game'
 import { TEAM_IDS, type TeamId } from '@/game/types'
@@ -49,6 +49,12 @@ function onColor(id: TeamId, event: Event): void {
 function undo(): void {
   store.undo()
 }
+
+/** No file in `public/audio/` means there is nothing to switch on. */
+const musicLabel = computed(() => {
+  if (!store.musicAvailable) return 'אין קובץ מוזיקה'
+  return store.musicEnabled ? 'מוזיקת רקע פועלת' : 'מוזיקת רקע כבויה'
+})
 
 function confirmPending(): void {
   if (pendingAction.value === 'restart') store.restartGame()
@@ -100,6 +106,23 @@ function confirmPending(): void {
           <component :is="store.soundEnabled ? Volume2 : VolumeX" :size="19" />
           <span>{{ store.soundEnabled ? 'אפקטים קוליים פועלים' : 'אפקטים קוליים כבויים' }}</span>
           <span class="switch" :class="{ 'switch--on': store.soundEnabled }" aria-hidden="true"></span>
+        </button>
+
+        <button
+          type="button"
+          class="row-button"
+          :disabled="!store.musicAvailable"
+          :title="store.musicAvailable ? undefined : 'לא נמצא קובץ מוזיקה בתיקיית public/audio'"
+          @click="store.toggleMusic()"
+        >
+          <Disc3 :size="19" :class="{ 'disc--spin': store.musicAvailable && store.musicEnabled }" />
+          <span>{{ musicLabel }}</span>
+          <span
+            v-if="store.musicAvailable"
+            class="switch"
+            :class="{ 'switch--on': store.musicEnabled }"
+            aria-hidden="true"
+          ></span>
         </button>
 
         <button type="button" class="row-button" :disabled="!store.canUndo" @click="undo">
@@ -261,6 +284,23 @@ function confirmPending(): void {
 .row-button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* The record turns while the theme is playing. */
+.disc--spin {
+  animation: disc-spin 3.4s linear infinite;
+}
+
+@keyframes disc-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disc--spin {
+    animation: none;
+  }
 }
 
 .switch {

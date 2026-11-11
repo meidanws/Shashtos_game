@@ -26,6 +26,20 @@ export function saveGameState(state: GameState): void {
 }
 
 /**
+ * Fills in settings added after a game was saved, so a game in progress
+ * survives the upgrade instead of being thrown out by the validator. Only for
+ * additions that have a safe default — anything that changes the shape of the
+ * board still goes through STATE_VERSION.
+ */
+function migrate(value: unknown): unknown {
+  if (typeof value !== 'object' || value === null) return value
+  const state = value as Record<string, unknown>
+  // Added with the background theme; older saves predate the setting.
+  if (typeof state.musicEnabled !== 'boolean') state.musicEnabled = true
+  return state
+}
+
+/**
  * Restore a previously saved game. Returns null when nothing valid is stored,
  * so a corrupted or outdated entry falls back to a clean setup screen instead
  * of crashing or half-loading.
@@ -36,7 +50,7 @@ export function restoreGameState(): GameState | null {
   try {
     const raw = ls.getItem(STORAGE_KEY)
     if (!raw) return null
-    const parsed: unknown = JSON.parse(raw)
+    const parsed: unknown = migrate(JSON.parse(raw))
     return validateGameState(parsed) ? parsed : null
   } catch {
     return null

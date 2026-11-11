@@ -83,6 +83,7 @@ export function createNewGame(config: GameConfig, random: () => number = Math.ra
     pendingTeam: null,
     moves: [],
     soundEnabled: config.soundEnabled ?? true,
+    musicEnabled: config.musicEnabled ?? true,
     createdAt: Date.now(),
   }
 }
@@ -111,6 +112,7 @@ export function createSetupState(): GameState {
     pendingTeam: null,
     moves: [],
     soundEnabled: true,
+    musicEnabled: true,
     createdAt: Date.now(),
   }
 }
@@ -399,6 +401,7 @@ export function validateGameState(value: unknown): value is GameState {
     return false
   }
   if (typeof state.soundEnabled !== 'boolean') return false
+  if (typeof state.musicEnabled !== 'boolean') return false
 
   const teams = state.teams as Record<string, unknown> | undefined
   if (!teams || !isTeam(teams.team1, 'team1') || !isTeam(teams.team2, 'team2')) return false

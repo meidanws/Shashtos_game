@@ -23,7 +23,8 @@ let enabled = true
 
 type AudioContextCtor = typeof AudioContext
 
-function getContext(): AudioContext | null {
+/** The shared context, created on demand but never started. */
+function createContext(): AudioContext | null {
   if (typeof window === 'undefined') return null
   if (!ctx) {
     const Ctor: AudioContextCtor | undefined =
@@ -38,8 +39,33 @@ function getContext(): AudioContext | null {
       return null
     }
   }
-  if (ctx.state === 'suspended') void ctx.resume()
   return ctx
+}
+
+function getContext(): AudioContext | null {
+  const audio = createContext()
+  if (!audio) return null
+  if (audio.state === 'suspended') void audio.resume()
+  return audio
+}
+
+/**
+ * The shared AudioContext, started if it was idle, so the background music
+ * rides on the same one as the sound kit. Null where Web Audio is unavailable.
+ */
+export function getAudioContext(): AudioContext | null {
+  return getContext()
+}
+
+/**
+ * The shared context exactly as it stands, without trying to start it.
+ *
+ * Resuming a context the page has not earned yet gets the browser telling us
+ * off in the console, so this is how to ask whether sound is allowed at all
+ * yet: a context that comes up `running` means this browser trusts the site.
+ */
+export function peekAudioContext(): AudioContext | null {
+  return createContext()
 }
 
 export function setSoundEnabled(value: boolean): void {

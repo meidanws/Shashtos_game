@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { playSound, setSoundEnabled } from '@/game/audio'
+import { initMusic, onMusicStatus, setMusicEnabled } from '@/game/music'
 import {
   CUBE_COUNT,
   allCubesRevealed as allCubesRevealedPure,
@@ -69,6 +70,14 @@ export const useGameStore = defineStore('game', () => {
 
   setSoundEnabled(state.value.soundEnabled)
 
+  /** False until an audio file is actually found in `public/audio/`. */
+  const musicAvailable = ref(false)
+  onMusicStatus((status) => {
+    musicAvailable.value = status === 'ready'
+  })
+  // Loads the track now and starts it on the first click, tap or key press.
+  initMusic(state.value.musicEnabled)
+
   function later(fn: () => void, ms: number): void {
     const id = setTimeout(() => {
       timers.delete(id)
@@ -105,6 +114,7 @@ export const useGameStore = defineStore('game', () => {
   /** The running total while the wall is opening: only what is face up counts. */
   const liveScores = computed(() => calculateRevealedScores(state.value.cubes))
   const soundEnabled = computed(() => state.value.soundEnabled)
+  const musicEnabled = computed(() => state.value.musicEnabled)
   const canUndo = computed(() => state.value.phase === 'claiming' && state.value.moves.length > 0)
   /** The game is still on, but no cube is left to win. */
   const wallFull = computed(() => state.value.phase === 'claiming' && wallIsFull(state.value))
@@ -151,17 +161,19 @@ export const useGameStore = defineStore('game', () => {
     state.value = createNewGame({
       ...config,
       soundEnabled: config.soundEnabled ?? state.value.soundEnabled,
+      musicEnabled: config.musicEnabled ?? state.value.musicEnabled,
     })
     playSound('click')
   }
 
   /** New board, same teams and settings. */
   function restartGame(): void {
-    const { teams: current, soundEnabled: sound } = state.value
+    const { teams: current, soundEnabled: sound, musicEnabled: music } = state.value
     startGame({
       team1: { name: current.team1.name, color: current.team1.color },
       team2: { name: current.team2.name, color: current.team2.color },
       soundEnabled: sound,
+      musicEnabled: music,
     })
   }
 
@@ -175,6 +187,7 @@ export const useGameStore = defineStore('game', () => {
       ...createSetupState(),
       teams: cloneTeams(state.value.teams),
       soundEnabled: state.value.soundEnabled,
+      musicEnabled: state.value.musicEnabled,
     }
   }
 
@@ -307,6 +320,15 @@ export const useGameStore = defineStore('game', () => {
     setSound(!state.value.soundEnabled)
   }
 
+  /** The background theme, entirely separate from the effects above. */
+  function setMusic(value: boolean): void {
+    state.value.musicEnabled = value
+  }
+
+  function toggleMusic(): void {
+    setMusic(!state.value.musicEnabled)
+  }
+
   // --- the final tally -----------------------------------------------------
 
   // The totals are only announced once the last cube has actually settled.
@@ -327,6 +349,11 @@ export const useGameStore = defineStore('game', () => {
     () => state.value.soundEnabled,
     (value) => setSoundEnabled(value),
   )
+  // Covers every route in — the toggles, a restored game, a brand new one.
+  watch(
+    () => state.value.musicEnabled,
+    (value) => setMusicEnabled(value),
+  )
 
   return {
     state,
@@ -343,6 +370,8 @@ export const useGameStore = defineStore('game', () => {
     scores,
     liveScores,
     soundEnabled,
+    musicEnabled,
+    musicAvailable,
     canUndo,
     canFinish,
     wallFull,
@@ -373,5 +402,7 @@ export const useGameStore = defineStore('game', () => {
     updateTeam,
     setSound,
     toggleSound,
+    setMusic,
+    toggleMusic,
   }
 })

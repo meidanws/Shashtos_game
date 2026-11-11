@@ -44,6 +44,8 @@ export interface GameState {
   pendingTeam: TeamId | null
   moves: Move[]
   soundEnabled: boolean
+  /** The looping background theme, switched independently of the effects. */
+  musicEnabled: boolean
   createdAt: number
 }
 
@@ -56,6 +58,7 @@ export interface GameConfig {
   team1: TeamSetup
   team2: TeamSetup
   soundEnabled?: boolean
+  musicEnabled?: boolean
 }
 
 export type Scores = Record<TeamId, number>

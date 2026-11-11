@@ -109,6 +109,24 @@ describe('createNewGame', () => {
     expect(countClaimed(game.cubes)).toEqual({ team1: 0, team2: 0 })
   })
 
+  it('turns both sound and music on unless told otherwise', () => {
+    const game = newGame()
+    expect(game.soundEnabled).toBe(true)
+    expect(game.musicEnabled).toBe(true)
+    expect(createSetupState().musicEnabled).toBe(true)
+  })
+
+  it('keeps the two audio settings apart', () => {
+    const quiet = createNewGame({
+      team1: { name: 'א', color: '#2f7ff5' },
+      team2: { name: 'ב', color: '#f0392b' },
+      soundEnabled: false,
+      musicEnabled: true,
+    })
+    expect(quiet.soundEnabled).toBe(false)
+    expect(quiet.musicEnabled).toBe(true)
+  })
+
   it('falls back to default names when given blank ones', () => {
     const game = createNewGame({
       team1: { name: '   ', color: '#2f7ff5' },
@@ -582,6 +600,13 @@ describe('validateGameState', () => {
         cubes: game.cubes.map(({ revealed: _revealed, ...rest }) => rest),
       }),
     ).toBe(false)
+  })
+
+  it('rejects a state missing an audio setting', () => {
+    const { soundEnabled: _sound, ...noSound } = newGame()
+    const { musicEnabled: _music, ...noMusic } = newGame()
+    expect(validateGameState(noSound)).toBe(false)
+    expect(validateGameState(noMusic)).toBe(false)
   })
 
   it('rejects a malformed team colour or pending team', () => {

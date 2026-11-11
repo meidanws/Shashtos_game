@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Play, Volume2, VolumeX } from "lucide-vue-next";
+import { Disc3, Play, Volume2, VolumeX } from "lucide-vue-next";
 import AppFooter from "./AppFooter.vue";
 import ShatusLogo from "./ShatusLogo.vue";
 import { useGameStore } from "@/stores/game";
@@ -60,6 +60,15 @@ function pickCustomColor(key: TeamId, color: string): void {
 }
 
 const sound = ref(store.soundEnabled);
+
+/**
+ * The music toggle takes effect on the spot rather than waiting for the game
+ * to start — the whole point is hearing what you just switched on.
+ */
+const musicLabel = computed(() => {
+  if (!store.musicAvailable) return "אין קובץ מוזיקה";
+  return store.musicEnabled ? "מוזיקת רקע פועלת" : "מוזיקת רקע כבויה";
+});
 
 const sameColor = computed(
   () =>
@@ -197,6 +206,16 @@ const TEAM_KEYS: TeamId[] = ["team1", "team2"];
           <span>{{
             sound ? "אפקטים קוליים פועלים" : "אפקטים קוליים כבויים"
           }}</span>
+        </button>
+
+        <button
+          v-if="store.musicAvailable"
+          type="button"
+          class="sound-toggle"
+          @click="store.toggleMusic()"
+        >
+          <Disc3 :size="19" :class="{ 'disc--spin': store.musicEnabled }" />
+          <span>{{ musicLabel }}</span>
         </button>
 
         <button type="submit" class="pill-button setup__start">
@@ -415,6 +434,23 @@ const TEAM_KEYS: TeamId[] = ["team1", "team2"];
 
 .sound-toggle:hover {
   background: rgba(255, 255, 255, 0.14);
+}
+
+/* The record turns while the theme is playing. */
+.disc--spin {
+  animation: disc-spin 3.4s linear infinite;
+}
+
+@keyframes disc-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disc--spin {
+    animation: none;
+  }
 }
 
 .setup__start {
