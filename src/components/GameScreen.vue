@@ -246,7 +246,7 @@ function goHome(): void {
   --word-size: clamp(1.4rem, 2.4vw, 2.9rem);
   --sub-size: clamp(0.5rem, 0.8vw, 0.9rem);
   /* big enough that the גן ימית caption on the badge stays readable */
-  --badge-size: clamp(60px, 5.4vw, 120px);
+  --badge-size: clamp(60px, 5.4vw, 100px);
 }
 
 .screen__center {

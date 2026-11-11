@@ -71,7 +71,7 @@ onBeforeUnmount(() => {
      and grid gaps. On any landscape screen height is the binding constraint,
      so the upper bound exists only to stop the wall outgrowing a very tall
      display — 1500px used to leave a 4K projector two-thirds empty. */
-  --chrome: 195px;
+  --chrome: clamp(190px, calc(5.4vw + 112px), 270px);
   --ratio: 1.28;
   --bulb: clamp(11px, 0.75vw, 20px);
   width: clamp(420px, min(96vw, calc((100dvh - var(--chrome)) * var(--ratio))), 2400px);
