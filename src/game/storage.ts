@@ -1,5 +1,5 @@
 import { validateGameState } from './logic'
-import type { GameState } from './types'
+import type { Cube, GameState } from './types'
 
 export const STORAGE_KEY = 'shatus.wall.state'
 
@@ -36,6 +36,16 @@ function migrate(value: unknown): unknown {
   const state = value as Record<string, unknown>
   // Added with the background theme; older saves predate the setting.
   if (typeof state.musicEnabled !== 'boolean') state.musicEnabled = true
+
+  // The wall used to turn over all twelve cubes, including the ones nobody
+  // picked. It only opens the cubes that were won now, so a wall saved
+  // half-open under the old rule is squared up on the way in.
+  if (Array.isArray(state.cubes)) {
+    for (const cube of state.cubes as Cube[]) {
+      if (cube && cube.revealed && cube.claimedBy === null) cube.revealed = false
+    }
+  }
+
   return state
 }
 

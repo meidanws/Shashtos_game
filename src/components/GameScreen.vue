@@ -198,7 +198,7 @@ function goHome(): void {
     <ConfirmationDialog
       :open="finishConfirmOpen"
       title="לסיים את המשחק?"
-      :message="`שיחקתם ${store.claimedCount} סיבובים. ${untouched} קוביות לא נבחרו ולא ייספרו, ואי אפשר יהיה להוסיף עוד סיבובים.`"
+      :message="`ייפתחו רק ${store.claimedCount} הקוביות שנבחרו — ${untouched} הקוביות הנותרות יישארו סגורות. אי אפשר יהיה להוסיף עוד סיבובים.`"
       confirm-label="כן, לפתוח את הקוביות"
       @confirm="confirmFinish"
       @cancel="finishConfirmOpen = false"

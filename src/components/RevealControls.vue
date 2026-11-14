@@ -2,24 +2,28 @@
 import { computed } from 'vue'
 import { FastForward } from 'lucide-vue-next'
 import LiveTally from './LiveTally.vue'
-import { CUBE_COUNT } from '@/game/logic'
 import { useGameStore } from '@/stores/game'
 
 const store = useGameStore()
 
-const progress = computed(() => (store.revealedCount / CUBE_COUNT) * 100)
+/** Only the cubes that were won are opened, so they are the whole of the bar. */
+const progress = computed(() =>
+  store.openableCount === 0 ? 0 : (store.revealedCount / store.openableCount) * 100,
+)
 </script>
 
 <template>
   <div class="opening">
     <p class="opening__prompt" aria-live="polite">
-      <template v-if="store.hiddenCount > 0">לחצו על קוביה כדי לגלות מה מסתתר מאחוריה</template>
+      <template v-if="store.hiddenCount > 0">
+        לחצו על קוביה שנבחרה כדי לגלות מה מסתתר מאחוריה
+      </template>
       <template v-else>סופרים את הנקודות...</template>
     </p>
 
     <div class="opening__row">
       <span class="opening__count">
-        <strong class="num">{{ store.revealedCount }}/{{ CUBE_COUNT }}</strong>
+        <strong class="num">{{ store.revealedCount }}/{{ store.openableCount }}</strong>
         <span>נחשפו</span>
       </span>
 

@@ -3,8 +3,6 @@ import { computed, ref, watch } from 'vue'
 import { playSound, setSoundEnabled } from '@/game/audio'
 import { initMusic, onMusicStatus, setMusicEnabled } from '@/game/music'
 import {
-  CUBE_COUNT,
-  allCubesRevealed as allCubesRevealedPure,
   calculateRevealedScores,
   calculateTeamScores,
   canClaimCube,
@@ -20,9 +18,11 @@ import {
   getWinner,
   hiddenCubes,
   isCubeOutOfPlay,
+  openableCubes,
   remainingCubes,
-  revealAllCubes as revealAllPure,
+  revealComplete as revealCompletePure,
   revealCube as revealCubePure,
+  revealRemainingCubes as revealRemainingPure,
   revealedCount as revealedCountPure,
   selectWinner as selectWinnerPure,
   undoLastClaim as undoPure,
@@ -131,9 +131,11 @@ export const useGameStore = defineStore('game', () => {
 
   /** The game has been called and the wall is being opened. */
   const isRevealStage = computed(() => state.value.phase === 'revealing')
+  /** How many cubes this reveal opens in total — the ones that were won. */
+  const openableCount = computed(() => openableCubes(state.value).length)
   const revealedCount = computed(() => revealedCountPure(state.value))
-  const hiddenCount = computed(() => CUBE_COUNT - revealedCount.value)
-  const allRevealed = computed(() => allCubesRevealedPure(state.value))
+  const hiddenCount = computed(() => openableCount.value - revealedCount.value)
+  const allRevealed = computed(() => revealCompletePure(state.value))
   /** True once the final cube has finished turning over. */
   const revealFinished = ref(allRevealed.value)
 
@@ -149,6 +151,12 @@ export const useGameStore = defineStore('game', () => {
 
   function isCubeRevealable(cubeId: number): boolean {
     return canRevealCubePure(state.value, cubeId)
+  }
+
+  /** Nobody picked this one, and the game is over: it stays shut. */
+  function isCubeDiscarded(cubeId: number): boolean {
+    const cube = state.value.cubes.find((c) => c.id === cubeId)
+    return cube !== undefined && isCubeOutOfPlay(state.value, cube)
   }
 
   // --- actions -------------------------------------------------------------
@@ -278,7 +286,7 @@ export const useGameStore = defineStore('game', () => {
     later(
       () => {
         // belt and braces: whatever a timer missed still ends up face up
-        state.value = revealAllPure(state.value)
+        state.value = revealRemainingPure(state.value)
         isRevealing.value = false
       },
       hidden.length * REVEAL_STAGGER_MS + 40,
@@ -380,6 +388,7 @@ export const useGameStore = defineStore('game', () => {
     nudgeWinnerPicker,
     isRevealStage,
     isRevealing,
+    openableCount,
     revealedCount,
     hiddenCount,
     allRevealed,
@@ -390,6 +399,7 @@ export const useGameStore = defineStore('game', () => {
     teamColor,
     isCubeSelectable,
     isCubeRevealable,
+    isCubeDiscarded,
     startGame,
     restartGame,
     backToSetup,

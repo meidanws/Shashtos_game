@@ -47,6 +47,7 @@ onBeforeUnmount(() => {
           :index="index"
           :selectable="store.isCubeSelectable(cube.id)"
           :revealable="store.isCubeRevealable(cube.id)"
+          :out-of-play="store.isCubeDiscarded(cube.id)"
           :flipped="cube.revealed"
           :team-color="cube.claimedBy ? store.teamColor(cube.claimedBy) : null"
           :team-name="cube.claimedBy ? store.teams[cube.claimedBy].name : null"

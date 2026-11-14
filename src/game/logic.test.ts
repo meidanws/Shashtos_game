@@ -3,7 +3,6 @@ import { CHARACTERS } from './characters'
 import {
   CUBE_COUNT,
   SCORE_DISTRIBUTION,
-  allCubesRevealed,
   calculateRevealedScores,
   calculateTeamScores,
   canClaimCube,
@@ -20,9 +19,11 @@ import {
   getWinner,
   hiddenCubes,
   isCubeOutOfPlay,
+  openableCubes,
   remainingCubes,
-  revealAllCubes,
+  revealComplete,
   revealCube,
+  revealRemainingCubes,
   revealedCount,
   selectWinner,
   undoLastClaim,
@@ -54,9 +55,9 @@ function claimAll(state: GameState, winnerFor: (i: number) => TeamId = (i) => (i
   return current
 }
 
-/** Call the game and turn every cube over. */
+/** Call the game and turn over every cube that was won. */
 function openAll(state: GameState): GameState {
-  return revealAllCubes(finishGame(state))
+  return revealRemainingCubes(finishGame(state))
 }
 
 function tally(values: readonly number[]): Map<number, number> {
@@ -287,7 +288,7 @@ describe('opening the wall, one cube at a time', () => {
     expect(state.cubes[7].revealed).toBe(true)
     expect(revealedCount(state)).toBe(1)
     expect(hiddenCubes(state)).toHaveLength(CUBE_COUNT - 1)
-    expect(allCubesRevealed(state)).toBe(false)
+    expect(revealComplete(state)).toBe(false)
   })
 
   it('ignores a cube that is already face up, or one that does not exist', () => {
@@ -304,33 +305,49 @@ describe('opening the wall, one cube at a time', () => {
     const playing = round(newGame(), 'team1', 0)
     expect(canRevealCube(playing, 0)).toBe(false)
     expect(revealCube(playing, 0).state).toBe(playing)
-    expect(revealAllCubes(playing)).toBe(playing)
+    expect(revealRemainingCubes(playing)).toBe(playing)
   })
 
-  it('is open only after the last cube — including those nobody played for', () => {
-    // two rounds played, so ten cubes were never chosen
+  it('never turns over a cube nobody picked', () => {
+    const state = finishGame(round(newGame(), 'team1', 0))
+    expect(openableCubes(state)).toHaveLength(1)
+    expect(hiddenCubes(state)).toHaveLength(1)
+
+    expect(canRevealCube(state, 5)).toBe(false)
+    expect(revealCube(state, 5).revealed).toBeNull()
+    expect(revealCube(state, 5).state).toBe(state)
+  })
+
+  it('is open once the last cube that was won is over, not the whole wall', () => {
+    // two rounds played, so ten cubes were never chosen and never open
     let state = finishGame(round(round(newGame(), 'team1', 0), 'team2', 1))
-    for (const cube of state.cubes) {
-      expect(allCubesRevealed(state)).toBe(false)
-      state = revealCube(state, cube.id).state
-    }
-    expect(allCubesRevealed(state)).toBe(true)
-    expect(revealedCount(state)).toBe(CUBE_COUNT)
+    expect(revealComplete(state)).toBe(false)
+
+    state = revealCube(state, 0).state
+    expect(revealComplete(state)).toBe(false)
+
+    state = revealCube(state, 1).state
+    expect(revealComplete(state)).toBe(true)
+    expect(revealedCount(state)).toBe(2)
+    expect(state.cubes.filter((cube) => cube.revealed)).toHaveLength(2)
   })
 
-  it('opens everything still face down when someone skips ahead', () => {
-    const half = revealCube(called(), 0).state
-    const all = revealAllCubes(half)
-    expect(allCubesRevealed(all)).toBe(true)
-    expect(hiddenCubes(all)).toHaveLength(0)
+  it('opens every cube that was won when someone skips ahead, and no others', () => {
+    const short = revealRemainingCubes(finishGame(round(round(newGame(), 'team1', 0), 'team2', 1)))
+    expect(revealComplete(short)).toBe(true)
+    expect(short.cubes.filter((cube) => cube.revealed)).toHaveLength(2)
     // with nothing left to open it is a no-op
-    expect(revealAllCubes(all)).toBe(all)
+    expect(revealRemainingCubes(short)).toBe(short)
+
+    const full = revealRemainingCubes(revealCube(called(), 0).state)
+    expect(hiddenCubes(full)).toHaveLength(0)
+    expect(full.cubes.every((cube) => cube.revealed)).toBe(true)
   })
 
   it('leaves the original state untouched', () => {
     const state = called()
     revealCube(state, 3)
-    revealAllCubes(state)
+    revealRemainingCubes(state)
     expect(state.cubes[3].revealed).toBe(false)
     expect(revealedCount(state)).toBe(0)
   })
@@ -389,7 +406,7 @@ describe('the running tally', () => {
   })
 
   it('ignores cubes nobody claimed, however they are opened', () => {
-    const state = revealAllCubes(finishGame(round(newGame(), 'team1', 4)))
+    const state = revealRemainingCubes(finishGame(round(newGame(), 'team1', 4)))
     expect(countRevealedClaimed(state.cubes)).toEqual({ team1: 1, team2: 0 })
     expect(calculateRevealedScores(state.cubes)).toEqual({
       team1: state.cubes[4].score,
@@ -417,8 +434,9 @@ describe('a game called early', () => {
     const outOfPlay = open.cubes.filter((c) => isCubeOutOfPlay(open, c))
     expect(outOfPlay).toHaveLength(9)
     expect(outOfPlay.every((c) => c.claimedBy === null)).toBe(true)
-    // they are still turned over at the end, they simply count for nobody
-    expect(outOfPlay.every((c) => c.revealed)).toBe(true)
+    // nobody played for them, so nobody has to sit through them either
+    expect(outOfPlay.every((c) => !c.revealed)).toBe(true)
+    expect(openableCubes(open)).toHaveLength(3)
 
     const scores = calculateTeamScores(open.cubes)
     expect(scores).toEqual({
@@ -530,10 +548,10 @@ describe('validateGameState', () => {
     expect(validateGameState(round(game, 'team1', 0))).toBe(true)
     expect(validateGameState(selectWinner(game, 'team2'))).toBe(true)
 
-    const called = finishGame(round(game, 'team1', 0))
+    const called = finishGame(round(round(game, 'team1', 0), 'team2', 5))
     expect(validateGameState(called)).toBe(true)
     expect(validateGameState(revealCube(called, 5).state)).toBe(true)
-    expect(validateGameState(revealAllCubes(called))).toBe(true)
+    expect(validateGameState(revealRemainingCubes(called))).toBe(true)
   })
 
   it('survives a JSON round trip', () => {
@@ -598,6 +616,17 @@ describe('validateGameState', () => {
       validateGameState({
         ...game,
         cubes: game.cubes.map(({ revealed: _revealed, ...rest }) => rest),
+      }),
+    ).toBe(false)
+  })
+
+  it('rejects a cube nobody won that was turned over', () => {
+    const open = openAll(round(newGame(), 'team1', 0))
+    expect(validateGameState(open)).toBe(true)
+    expect(
+      validateGameState({
+        ...open,
+        cubes: open.cubes.map((c) => (c.id === 6 ? { ...c, revealed: true } : c)),
       }),
     ).toBe(false)
   })

@@ -12,6 +12,8 @@ const props = defineProps<{
   selectable: boolean
   /** The game is over and this cube is still face down — tap to turn it over. */
   revealable: boolean
+  /** The game is over and nobody ever picked this one: it stays shut. */
+  outOfPlay: boolean
   /** Turned over: showing the score, or that it was never played for. */
   flipped: boolean
   teamColor: string | null
@@ -59,7 +61,7 @@ const ariaLabel = computed(() => {
   if (props.blocked) return `${character.value.name} — ${BLOCKED_HINT}`
   const who = isClaimed.value ? `שייכת ל${props.teamName}` : 'לא נבחרה'
   if (props.revealable) return `${character.value.name}, ${who} — לחצו כדי לגלות`
-  if (props.flipped && !isClaimed.value) return `${character.value.name} — לא רלוונטי`
+  if (props.outOfPlay) return `${character.value.name} — לא נבחרה במהלך המשחק`
   const score = props.flipped ? `, ${scoreLabel.value} נקודות` : ''
   return `${character.value.name} — ${isClaimed.value ? who : 'עדיין פנויה'}${score}`
 })
@@ -84,6 +86,7 @@ const style = computed(() => ({
         'is-fresh': justClaimed,
         'is-open': selectable,
         'is-revealable': revealable,
+        'is-out-of-play': outOfPlay,
         'is-blocked': blocked,
       },
     ]"
@@ -103,16 +106,11 @@ const style = computed(() => ({
           <span class="cube__gloss"></span>
         </span>
 
-        <!-- back: the hidden score, or nothing if the cube was never played for -->
+        <!-- back: the hidden score. Only a cube a team won is ever turned over. -->
         <span class="cube__face cube__face--back">
-          <template v-if="isClaimed">
-            <span class="cube__burst"></span>
-            <span class="cube__score num">{{ scoreLabel }}</span>
-            <span class="cube__tag">{{ tagline }}</span>
-          </template>
-          <template v-else>
-            <span class="cube__skip">לא רלוונטי</span>
-          </template>
+          <span class="cube__burst"></span>
+          <span class="cube__score num">{{ scoreLabel }}</span>
+          <span class="cube__tag">{{ tagline }}</span>
         </span>
       </span>
     </span>
@@ -226,9 +224,11 @@ const style = computed(() => ({
   /* on .cube__lift, not .cube, so cqw measures the cube (see above) */
   --face-radius: clamp(8px, 7cqw, 30px);
   transform-style: preserve-3d;
+  /* scale stays quick: it is also the press-and-hover feedback */
   transition:
     scale 0.16s ease,
-    filter 0.3s ease;
+    opacity 0.4s ease,
+    filter 0.4s ease;
 }
 
 /* A slow idle bob while the cube is still up for grabs — and again while it is
@@ -252,9 +252,18 @@ const style = computed(() => ({
   scale: 0.97;
 }
 
-/* Once the game is called, every face-down cube invites a tap. */
+/* Once the game is called, every cube that was won invites a tap. */
 .cube.is-revealable {
   --highlight: var(--gold);
+}
+
+/* Nobody picked this one before the game was called. There is nothing behind
+   it worth waiting for, so it stays shut and settles back into the wall
+   instead of asking to be opened. */
+.cube.is-out-of-play .cube__lift {
+  scale: 0.94;
+  opacity: 0.45;
+  filter: grayscale(0.8) brightness(0.6);
 }
 
 .cube__tap {
@@ -423,22 +432,6 @@ const style = computed(() => ({
     ),
     linear-gradient(168deg, #5b5370, #37324a 60%, #241f33);
   color: rgba(255, 247, 234, 0.72);
-}
-
-.cube__skip {
-  position: relative;
-  padding: 0.35em 0.9em;
-  font-family: var(--font-display);
-  font-size: clamp(0.55rem, 7cqw, 1.7rem);
-  letter-spacing: 0.02em;
-  text-align: center;
-  border: 2px dashed rgba(255, 247, 234, 0.4);
-  border-radius: 999px;
-  rotate: -8deg;
-}
-
-.cube.is-flipped .cube__skip {
-  animation: score-pop 0.4s ease-out 360ms both;
 }
 
 .cube__burst {

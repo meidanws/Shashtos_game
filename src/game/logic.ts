@@ -181,18 +181,28 @@ export function canFinishGame(state: GameState): boolean {
   return state.phase === 'claiming' && state.moves.length > 0
 }
 
-/** Cubes still face down, in wall order. */
+/**
+ * The cubes the reveal is about: only the ones a team actually won.
+ *
+ * A cube nobody picked has nothing to say — it was never played for and
+ * counts for nothing — so the wall does not make anyone sit through it.
+ */
+export function openableCubes(state: GameState): Cube[] {
+  return state.cubes.filter((cube) => cube.claimedBy !== null)
+}
+
+/** Won cubes still face down, in wall order. */
 export function hiddenCubes(state: GameState): Cube[] {
-  return state.cubes.filter((cube) => !cube.revealed)
+  return state.cubes.filter((cube) => cube.claimedBy !== null && !cube.revealed)
 }
 
 export function revealedCount(state: GameState): number {
-  return state.cubes.filter((cube) => cube.revealed).length
+  return state.cubes.filter((cube) => cube.claimedBy !== null && cube.revealed).length
 }
 
-/** Every cube has been turned over — time for the final tally. */
-export function allCubesRevealed(state: GameState): boolean {
-  return state.phase === 'revealing' && state.cubes.every((cube) => cube.revealed)
+/** Every cube that was won has been turned over — time for the final tally. */
+export function revealComplete(state: GameState): boolean {
+  return state.phase === 'revealing' && hiddenCubes(state).length === 0
 }
 
 /**
@@ -285,11 +295,11 @@ export function finishGame(state: GameState): GameState {
   }
 }
 
-/** A cube that is still face down on an opened wall can be turned over. */
+/** A won cube that is still face down on an opened wall can be turned over. */
 export function canRevealCube(state: GameState, cubeId: number): boolean {
   if (state.phase !== 'revealing') return false
   const cube = state.cubes.find((c) => c.id === cubeId)
-  return cube !== undefined && !cube.revealed
+  return cube !== undefined && cube.claimedBy !== null && !cube.revealed
 }
 
 export interface RevealResult {
@@ -311,13 +321,14 @@ export function revealCube(state: GameState, cubeId: number): RevealResult {
   }
 }
 
-/** Turn over everything still face down, for anyone who would rather skip ahead. */
-export function revealAllCubes(state: GameState): GameState {
+/** Turn over every won cube still waiting, for anyone who would rather skip ahead. */
+export function revealRemainingCubes(state: GameState): GameState {
   if (state.phase !== 'revealing') return state
-  if (hiddenCubes(state).length === 0) return state
+  const waiting = new Set(hiddenCubes(state).map((cube) => cube.id))
+  if (waiting.size === 0) return state
   return {
     ...state,
-    cubes: state.cubes.map((cube) => (cube.revealed ? cube : { ...cube, revealed: true })),
+    cubes: state.cubes.map((cube) => (waiting.has(cube.id) ? { ...cube, revealed: true } : cube)),
   }
 }
 
@@ -431,6 +442,8 @@ export function validateGameState(value: unknown): value is GameState {
     if (cube.claimedBy !== null && cube.claimedBy !== 'team1' && cube.claimedBy !== 'team2') {
       return false
     }
+    // Only a cube a team won is ever turned over.
+    if (cube.revealed && cube.claimedBy === null) return false
   }
   if (seenCharacters.size !== CHARACTERS.length) return false
   if (!hasExactScoreDistribution(cubes)) return false
